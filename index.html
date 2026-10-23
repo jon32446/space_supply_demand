@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131c">
+  <title>Orbital / Market Lab</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Orbital Market Lab home"><span class="brand-mark">O</span> ORBITAL <span class="brand-divider">/</span> <span class="muted">MARKET LAB</span></a>
+    <div class="account">
+      <div><span class="eyebrow">SIMULATION</span><strong id="day">Day 00</strong></div>
+      <div><span class="eyebrow">AVAILABLE CREDITS</span><strong id="credits">25,000.00 cr</strong></div>
+      <div><span class="eyebrow">CARGO</span><strong id="cargo">0 units</strong></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div><div class="eyebrow accent">ECONOMY SANDBOX / V1</div><h1>A small universe.<br>A living market.</h1><p class="muted">Move goods. Shift prices. Find the balance.</p></div>
+      <div class="time-controls">
+        <span class="live-label"><span class="live-dot"></span> Paused between turns</span>
+        <div class="button-row"><button id="advance-one" class="button secondary">Advance 1 day <span aria-hidden="true">&rarr;</span></button><button id="advance-seven" class="button secondary">+7 days</button></div>
+        <span class="hint">Production, then consumption. No automatic traders.</span>
+      </div>
+    </section>
+
+    <section class="destinations" aria-label="Planet selection" id="planets"></section>
+
+    <div class="workspace">
+      <section class="panel market-panel">
+        <div class="panel-heading"><div><div class="eyebrow">LOCAL EXCHANGE</div><h2 id="market-title">Vesper market</h2></div><span class="tag" id="market-description">Mining frontier</span></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th scope="col">Commodity</th><th scope="col">Stock / target</th><th scope="col">Net / day</th><th scope="col">Price</th><th scope="col">In hold</th></tr></thead>
+            <tbody id="market-rows"></tbody>
+          </table>
+        </div>
+        <div class="market-foot"><span><i class="legend-dot mint"></i> Surplus</span><span><i class="legend-dot amber"></i> Shortage</span><span>Prices in credits / unit</span></div>
+        <div class="market-explainer"><span class="eyebrow">HOW THIS WORKS</span><p>Buy goods to reduce local stock and raise prices. Sell to replenish stock and lower prices. Switch planets to take your cargo elsewhere.</p><p class="hint">Travel is instant and free in this sandbox. Production and consumption only happen when you advance time.</p></div>
+      </section>
+
+      <section class="panel curve-panel">
+        <div class="panel-heading"><div><div class="eyebrow">PRICE RESPONSE</div><h2 id="curve-title">Platinum</h2></div><div class="spot"><strong id="spot-price"></strong><span class="hint">current / unit</span></div></div>
+        <div class="chart-wrap"><svg id="price-chart" viewBox="0 0 620 250" role="img" aria-labelledby="chart-description"><title id="chart-description">Price versus available stock</title></svg></div>
+        <div class="chart-legend"><span><i class="legend-dot lavender"></i> Current stock</span><span><i class="legend-dot mint"></i> After trade</span><span class="hint">Dashed lines = target stock &amp; base price</span></div>
+        <div id="route-prices" class="route-prices" aria-label="Prices on other planets"></div>
+      </section>
+
+      <section class="panel trade-panel">
+        <div class="panel-heading"><div><div class="eyebrow">MANUAL TRADE</div><h2 id="trade-title">Trade platinum</h2></div><div class="segmented" role="group" aria-label="Trade direction"><button id="side-buy" aria-pressed="true">Buy</button><button id="side-sell" aria-pressed="false">Sell</button></div></div>
+        <div class="quantity-heading"><label for="quantity">Quantity <span class="hint" id="available"></span></label><input id="quantity" type="number" min="0" step="1" value="0" aria-describedby="quote-note"></div>
+        <input id="quantity-slider" type="range" min="0" max="100" value="0" step="1" aria-label="Trade quantity">
+        <div class="slider-labels"><span>0 units</span><span id="quantity-max">100 units</span></div>
+        <div class="trade-stats">
+          <div><span class="hint">Average / unit</span><strong id="average-price">&mdash;</strong></div>
+          <div><span class="hint">Price after trade</span><strong id="after-price">&mdash;</strong></div>
+          <div><span class="hint">Stock after trade</span><strong id="after-stock">&mdash;</strong></div>
+        </div>
+        <div class="trade-bottom"><div><span class="eyebrow" id="total-label">TOTAL COST</span><strong id="total-price">0.00 cr</strong></div><button class="button primary" id="execute-trade" disabled>Buy goods</button></div>
+        <p class="hint" id="quote-note">Every unit is priced along the curve. Previewing does not change the market.</p>
+        <p id="trade-warning" class="warning" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section class="tuning-section" aria-labelledby="tuning-title">
+      <div class="section-heading"><div><div class="eyebrow">THE CONTROL ROOM</div><h2 id="tuning-title">Change the rules.</h2></div><span class="hint">All changes are live. Editing stock does not spend credits.</span></div>
+      <div class="control-grid">
+        <section class="panel control-panel">
+          <div class="control-heading"><span class="control-number">01</span><div><h3>Local market</h3><span class="hint" id="local-label">Vesper / Platinum</span></div></div>
+          <form id="market-form">
+            <div class="field-grid">
+              <label>Available stock<input name="stock" id="stock-control" type="number" min="0" max="1000000" step="1" required></label>
+              <label>Target stock<input name="target" id="target-control" type="number" min="1" max="1000000" step="1" required></label>
+              <label>Production / day<input name="production" id="production-control" type="number" min="0" max="100000" step="1" required></label>
+              <label>Consumption / day<input name="consumption" id="consumption-control" type="number" min="0" max="100000" step="1" required></label>
+            </div>
+          </form>
+          <p class="hint">Target is the neutral point, not a storage limit.</p>
+          <div class="local-summary"><span class="hint">Unmet consumption, all turns</span><strong id="unmet">0 units</strong></div>
+        </section>
+        <section class="panel control-panel">
+          <div class="control-heading"><span class="control-number">02</span><div><h3>Commodity</h3><span class="hint">Applies to this good on every planet</span></div></div>
+          <form id="good-form">
+            <label>Base price <span class="hint">cr / unit</span><input id="base-price-control" type="number" min="0.01" max="1000000" step="0.01" required></label>
+            <div class="range-heading"><label for="good-sensitivity">Price sensitivity</label><output id="good-sensitivity-output"></output></div>
+            <input id="good-sensitivity" type="range" min="0.2" max="5" step="0.05" aria-describedby="sensitivity-help">
+            <div class="slider-labels"><span>Gentle</span><span>Sharp</span></div>
+          </form>
+          <p class="hint" id="sensitivity-help">Higher sensitivity means larger price swings for the same percentage change in stock.</p>
+          <div class="local-summary"><span class="hint">Effective response width</span><strong id="effective-width"></strong></div>
+        </section>
+        <section class="panel control-panel">
+          <div class="control-heading"><span class="control-number">03</span><div><h3>Universe</h3><span class="hint">Applies to every market</span></div></div>
+          <div class="range-heading"><label for="global-sensitivity">Global sensitivity</label><output id="global-sensitivity-output"></output></div>
+          <input id="global-sensitivity" type="range" min="0.2" max="3" step="0.05">
+          <div class="slider-labels"><span>Calmer</span><span>More volatile</span></div>
+          <form id="curve-form" class="field-grid advanced-fields">
+            <label>Curve offset<input id="offset-control" type="number" min="1.01" max="5" step="0.01" required></label>
+            <label>Exponent<input id="exponent-control" type="number" min="0.1" max="5" step="0.1" required></label>
+          </form>
+          <p class="hint">Offset stays above 1 to keep the curve finite. Higher exponents amplify price swings.</p>
+        </section>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <details class="panel utility-panel">
+        <summary>Add a custom commodity <span class="hint">Your universe, your goods</span></summary>
+        <form id="add-good-form" class="add-good-form">
+          <label>Name<input name="name" placeholder="e.g. Fusion cells" maxlength="40" required></label>
+          <label>Base price<input name="basePrice" type="number" min="0.01" max="1000000" value="100" step="0.01" required></label>
+          <label>Price sensitivity<input name="sensitivity" type="number" min="0.2" max="5" value="1" step="0.05" required></label>
+          <button type="submit" class="button secondary">Add good</button>
+        </form>
+        <p class="hint">Each planet gets seeded stock, needs, and production for the new good.</p>
+      </details>
+      <details class="panel utility-panel">
+        <summary>Seed &amp; reset <span class="hint">Repeat an experiment</span></summary>
+        <form id="seed-form" class="seed-form"><label>Universe seed<input id="seed" value="first-contact" maxlength="80" required></label><button type="submit" class="button secondary">Reset from seed</button><button id="random-seed" type="button" class="button secondary">New seed</button></form>
+        <p class="hint">Reset replaces all markets, custom goods, cargo, credits, and tuning. Nothing is saved between page reloads.</p>
+      </details>
+    </section>
+    <div class="status-bar" role="status" id="status">Ready. Select a good and move the quantity slider to preview a trade.</div>
+    <footer><span>ORBITAL / MARKET LAB</span><span>Stock-driven pricing. No hidden replenishment.</span></footer>
+  </main>
+</body>
+</html>
