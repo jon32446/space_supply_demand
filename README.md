@@ -44,6 +44,18 @@ There are no automatic traders or hidden replenishment. Production and
 consumption are fixed until edited; prices alone do not correct a global shortage
 or surplus. Stock never goes below zero, and unmet consumption is tracked.
 
+## GitHub Pages
+
+In the repository's **Settings > Pages**, set **Build and deployment > Source**
+to **GitHub Actions**. GitHub Actions must be enabled and allowed to use the
+official `actions/*` actions.
+
+Pushing to `master` runs the tests and deploys only the four browser files.
+You can also run **Deploy to GitHub Pages** manually from the Actions tab.
+No custom secrets or build step are needed.
+
+The site will be at <https://jon32446.github.io/space_supply_demand/>.
+
 ## Tests
 
 ```sh
